@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="没事哒没事哒" />
+<meta name="theme-color" content="#15162e" />
+<title>没事哒没事哒</title>
+<style>
+  :root{
+    --bg0:#15162e; --bg1:#241a44; --bg2:#0e1838;
+    --ink:#ECE9F5; --muted:#9a96b8; --faint:#6b6788;
+    --lav:#c9b6ff; --peach:#ffd2bd; --mint:#b6f0dd; --sky:#bcd9ff;
+    --card:rgba(255,255,255,.06); --line:rgba(255,255,255,.12);
+    --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Helvetica,"Microsoft YaHei",sans-serif;
+    color:var(--ink); background:var(--bg0);
+    -webkit-font-smoothing:antialiased; overscroll-behavior:none;
+  }
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+  .star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.5;animation:tw 4s ease-in-out infinite;}
+  @keyframes tw{0%,100%{opacity:.15;}50%{opacity:.7;}}
+  #app{
+    position:relative;z-index:1;min-height:100%;
+    background:
+      radial-gradient(120% 80% at 50% -10%, rgba(201,182,255,.18), transparent 60%),
+      radial-gradient(120% 90% at 80% 110%, rgba(182,240,221,.10), transparent 55%),
+      linear-gradient(180deg,var(--bg0) 0%, var(--bg1) 45%, var(--bg2) 100%);
+    padding:calc(var(--safe-t) + 18px) 18px calc(96px + var(--safe-b));
+  }
+  .view{display:none;animation:fade .45s ease;}
+  .view.active{display:block;}
+  @keyframes fade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  h1{font-size:26px;margin:6px 0 2px;font-weight:600;letter-spacing:.5px;}
+  h2{font-size:19px;margin:0 0 4px;font-weight:600;}
+  .sub{color:var(--muted);font-size:13.5px;line-height:1.6;margin:0 0 18px;}
+  .greet{font-size:14px;color:var(--lav);margin-bottom:2px;letter-spacing:1px;}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:22px;
+    padding:18px;margin-bottom:14px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  }
+  .row{display:flex;gap:12px;}
+  .row .card{flex:1;margin-bottom:0;}
+  .quick{
+    display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:18px;
+    background:var(--card);border:1px solid var(--line);margin-bottom:12px;cursor:pointer;
+    transition:transform .15s ease,background .2s ease;
+  }
+  .quick:active{transform:scale(.98);background:rgba(255,255,255,.10);}
+  .quick .ic{font-size:22px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+    border-radius:12px;background:rgba(255,255,255,.07);}
+  .quick .t{font-size:15px;font-weight:500;}
+  .quick .d{font-size:12px;color:var(--muted);margin-top:1px;}
+  .quote{font-size:17px;line-height:1.85;color:#f3f0fb;font-weight:500;min-height:84px;
+    display:flex;align-items:center;transition:opacity .4s ease,filter .4s ease;}
+  .quote .tag{display:inline-block;font-size:11px;color:var(--lav);border:1px solid rgba(201,182,255,.4);
+    border-radius:20px;padding:2px 9px;margin-bottom:10px;}
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    border:none;border-radius:16px;padding:13px 18px;font-size:15px;font-weight:600;
+    color:#1a1530;background:linear-gradient(135deg,var(--lav),#e3d6ff);cursor:pointer;
+    transition:transform .15s ease,opacity .2s ease;width:100%;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);}
+  .btn.soft{background:rgba(255,255,255,.08);color:var(--ink);}
+  .btn.sm{width:auto;padding:10px 16px;font-size:14px;border-radius:13px;}
+  /* breathing */
+  .breath-stage{height:300px;display:flex;align-items:center;justify-content:center;position:relative;margin:8px 0 4px;}
+  .breath-circle{
+    width:150px;height:150px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, rgba(201,182,255,.85), rgba(150,120,230,.35) 70%);
+    box-shadow:0 0 60px rgba(201,182,255,.45), inset 0 0 40px rgba(255,255,255,.25);
+    transform:scale(1);transition:transform 1s ease-in-out;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .breath-text{position:absolute;text-align:center;pointer-events:none;}
+  .breath-text .ph{font-size:20px;font-weight:600;letter-spacing:2px;}
+  .breath-text .cnt{font-size:38px;font-weight:300;color:#fff;margin-top:2px;}
+  .pills{display:flex;gap:8px;justify-content:center;margin:10px 0 16px;flex-wrap:wrap;}
+  .pill{padding:8px 14px;border-radius:20px;font-size:13px;background:rgba(255,255,255,.06);
+    border:1px solid var(--line);color:var(--muted);cursor:pointer;}
+  .pill.on{background:rgba(201,182,255,.18);color:var(--lav);border-color:rgba(201,182,255,.5);}
+  /* tree hole */
+  textarea{
+    width:100%;min-height:150px;resize:none;border-radius:16px;padding:16px;
+    background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--ink);
+    font-size:16px;line-height:1.7;font-family:inherit;outline:none;
+  }
+  textarea::placeholder{color:var(--faint);}
+  .release-anim{animation:dissolve 1.6s ease forwards;}
+  @keyframes dissolve{
+    0%{opacity:1;filter:blur(0);letter-spacing:0;transform:scale(1);}
+    100%{opacity:0;filter:blur(14px);letter-spacing:6px;transform:scale(1.05);}
+  }
+  .after-note{text-align:center;color:var(--mint);font-size:15px;margin-top:18px;line-height:1.7;display:none;}
+  /* mood */
+  .moods{display:flex;justify-content:space-between;gap:6px;margin:6px 0 14px;}
+  .mood{flex:1;text-align:center;padding:12px 4px;border-radius:16px;background:rgba(255,255,255,.05);
+    border:1px solid transparent;cursor:pointer;font-size:26px;transition:transform .15s,border-color .2s,background .2s;}
+  .mood:active{transform:scale(.94);}
+  .mood.on{border-color:rgba(201,182,255,.6);background:rgba(201,182,255,.14);}
+  .mood .lab{display:block;font-size:11px;color:var(--muted);margin-top:4px;}
+  .log-item{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.07);}
+  .log-item:last-child{border-bottom:none;}
+  .dot{width:10px;height:10px;border-radius:50%;flex:none;}
+  .log-item .m{font-size:14px;flex:1;}
+  .log-item .t{font-size:11px;color:var(--faint);flex:none;}
+  .empty{color:var(--faint);font-size:13px;text-align:center;padding:18px 0;}
+  .log-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+  .log-head h2{margin:0;}
+  .log-head .clear{font-size:12px;color:var(--faint);background:none;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:3px 11px;cursor:pointer;}
+  .log-head .clear:active{opacity:.6;}
+  .log-item .del{flex:none;font-size:15px;line-height:1;color:var(--faint);background:none;border:none;padding:4px 2px 4px 4px;margin-left:2px;cursor:pointer;opacity:.5;transition:opacity .15s;}
+  .log-item .del:active{opacity:1;}
+  /* sounds */
+  .sound{display:flex;align-items:center;gap:14px;padding:14px;border-radius:18px;background:rgba(255,255,255,.05);
+    border:1px solid var(--line);margin-bottom:12px;cursor:pointer;}
+  .sound.on{border-color:rgba(182,240,221,.6);background:rgba(182,240,221,.10);}
+  .sound .ic{font-size:24px;}
+  .sound .t{font-size:15px;font-weight:500;}
+  .sound .d{font-size:12px;color:var(--muted);margin-top:1px;}
+  .sound .st{margin-left:auto;font-size:12px;color:var(--mint);}
+  input[type=range]{width:100%;accent-color:#c9b6ff;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;color:var(--muted);margin-bottom:7px;}
+  .field input{width:100%;padding:12px 14px;border-radius:13px;background:rgba(255,255,255,.05);
+    border:1px solid var(--line);color:var(--ink);font-size:15px;outline:none;font-family:inherit;}
+  .fav{font-size:14px;line-height:1.7;color:#f0edf8;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);}
+  .fav:last-child{border-bottom:none;}
+  /* nav */
+  #nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:5;
+    display:flex;background:rgba(20,18,40,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-top:1px solid rgba(255,255,255,.10);padding:8px 6px calc(8px + var(--safe-b));
+  }
+  #nav .tab{flex:1;text-align:center;color:var(--faint);font-size:11px;padding:4px 0;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .2s;}
+  #nav .tab .em{font-size:21px;line-height:1;}
+  #nav .tab.on{color:var(--lav);}
+  .toast{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);background:rgba(0,0,0,.78);
+    color:#fff;padding:10px 18px;border-radius:20px;font-size:13.5px;z-index:20;opacity:0;
+    transition:opacity .3s;pointer-events:none;max-width:80%;text-align:center;}
+  .toast.show{opacity:1;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .clock{font-size:13px;color:var(--muted);}
+  .dedicate{text-align:center;font-size:19px;letter-spacing:1.5px;font-weight:800;margin:2px 0 16px;line-height:1.6;
+    background:linear-gradient(90deg,#ffd2bd 0%,#ffb6d9 35%,#c9b6ff 70%,#b6f0dd 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    filter:drop-shadow(0 0 12px rgba(201,182,255,.4));animation:dedfade .8s ease;}
+  @keyframes dedfade{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
+  .rec-bar{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+  .rec-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#ff6b81;margin-right:8px;vertical-align:middle;opacity:0;}
+  .rec-dot.live{opacity:1;animation:rpulse 1.1s infinite;}
+  @keyframes rpulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(1.5);}}
+  .rec-timer{font-variant-numeric:tabular-nums;font-size:15px;color:var(--muted);min-width:48px;}
+  .rec-player{margin-bottom:12px;display:none;}
+  .rec-player audio{width:100%;filter:invert(.92) hue-rotate(200deg) saturate(.7);}
+  .rec-tip{font-size:12px;color:var(--faint);margin:0 0 12px;}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+<div id="app">
+
+  <!-- 今夜 -->
+  <section class="view active" id="v-home">
+    <div class="dedicate">全世界最可爱、最漂亮的奶茶专属</div>
+    <div class="topbar"><div class="greet" id="greetText">夜深了</div><div class="clock" id="clockText"></div></div>
+    <h1 id="homeTitle">今夜，也辛苦了</h1>
+    <p class="sub" id="homeSub">如果现在心里有点空，点下面的卡片，挑一个想做的事。</p>
+
+    <div class="card">
+      <div class="quote" id="homeQuote">
+        <div><span class="tag" id="homeQuoteTag">暖心</span><div id="homeQuoteText"></div></div>
+      </div>
+      <button class="btn ghost sm" id="homeQuoteBtn" style="margin-top:8px;">换一句</button>
+    </div>
+
+    <div class="quick" data-go="breathe">
+      <div class="ic">🌬️</div>
+      <div><div class="t">做一次呼吸</div><div class="d">跟着节奏慢慢吸气、呼气</div></div>
+    </div>
+    <div class="quick" data-go="tree">
+      <div class="ic">🌿</div>
+      <div><div class="t">写写心情</div><div class="d">说出来，然后轻轻放下</div></div>
+    </div>
+    <div class="quick" data-go="warm">
+      <div class="ic">💗</div>
+      <div><div class="t">看看暖心话</div><div class="d">总有一句，正好说到心里</div></div>
+    </div>
+    <div class="quick" data-go="record">
+      <div class="ic">🌙</div>
+      <div><div class="t">记一下今天</div><div class="d">留下此刻的情绪，明天回头看</div></div>
+    </div>
+  </section>
+
+  <!-- 呼吸 -->
+  <section class="view" id="v-breathe">
+    <div class="topbar"><div class="greet">呼吸练习</div></div>
+    <h1>慢慢来，没关系</h1>
+    <p class="sub">把手放在肚子上，跟着光球。吸气让它鼓起，呼气让它落下。</p>
+    <div class="breath-stage">
+      <div class="breath-circle" id="breathCircle"></div>
+      <div class="breath-text"><div class="ph" id="breathPhase">准备好了吗</div><div class="cnt" id="breathCnt"></div></div>
+    </div>
+    <div class="pills" id="breathPills">
+      <div class="pill on" data-p="478">4-7-8 助眠</div>
+      <div class="pill" data-p="box">箱式呼吸</div>
+      <div class="pill" data-p="calm">平稳呼吸</div>
+    </div>
+    <button class="btn" id="breathStart">开始</button>
+    <button class="btn ghost" id="breathStop" style="display:none;margin-top:10px;">结束</button>
+  </section>
+
+  <!-- 树洞 -->
+  <section class="view" id="v-tree">
+    <div class="topbar"><div class="greet">树洞</div></div>
+    <h1>想说什么都行</h1>
+    <p class="sub">这里写下的话、录下的声音，都不会被保存，也不会被任何人看到。说完就让它飘走。</p>
+    <div class="card">
+      <div class="rec-bar">
+        <button class="btn soft sm" id="recBtn"><span class="rec-dot" id="recDot"></span><span id="recLabel">🎙️ 录一段语音</span></button>
+        <span class="rec-timer" id="recTimer">00:00</span>
+      </div>
+      <p class="rec-tip" id="recTip">不想打字？点下面的输入框，用 iPhone 键盘上的 🎙️ 听写就能把话说成文字（免费、不用授权）；或者点上方录一段语音，说完自己听一遍。</p>
+      <div id="recPlayer" class="rec-player"></div>
+      <textarea id="treeInput" placeholder="今天有点难受……（写下来，或录下来，都会轻轻飘走）"></textarea>
+      <button class="btn" id="treeRelease" style="margin-top:14px;">轻轻放下</button>
+      <div class="after-note" id="treeAfter">已经放下了一些。辛苦你了，今晚好好休息。🌙</div>
+    </div>
+  </section>
+
+  <!-- 暖心 -->
+  <section class="view" id="v-warm">
+    <div class="topbar"><div class="greet">暖心话</div><button class="btn soft sm" id="warmFavBtn">我的心头好</button></div>
+    <h1>你并不孤单</h1>
+    <p class="sub">轻轻一点，换一句。如果哪句特别戳中你，点「收进心头好」。</p>
+    <div class="card">
+      <div class="quote" id="warmQuote"><div><span class="tag" id="warmTag"></span><div id="warmText"></div></div></div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn" id="warmNext">换一句</button>
+        <button class="btn soft sm" id="warmSave" style="width:auto;">收进心头好</button>
+      </div>
+    </div>
+    <div class="card" id="favListWrap" style="display:none;">
+      <h2>心头好</h2>
+      <div id="favList"></div>
+    </div>
+  </section>
+
+  <!-- 记录 -->
+  <section class="view" id="v-record">
+    <div class="topbar"><div class="greet">今夜记录</div></div>
+    <h1>此刻的你</h1>
+    <p class="sub">选一个最贴近现在心情的词。不用准，凭感觉就好。</p>
+    <div class="moods" id="moodRow">
+      <div class="mood" data-m="1">😣<span class="lab">很难受</span></div>
+      <div class="mood" data-m="2">😔<span class="lab">低落</span></div>
+      <div class="mood" data-m="3">🌫️<span class="lab">平静</span></div>
+      <div class="mood" data-m="4">🙂<span class="lab">还好</span></div>
+      <div class="mood" data-m="5">🥰<span class="lab">温暖</span></div>
+    </div>
+    <textarea id="moodNote" placeholder="想多说两句也可以（可不填）" style="min-height:90px;margin-bottom:12px;"></textarea>
+    <button class="btn" id="moodSave">记下来</button>
+
+    <div class="card" style="margin-top:18px;">
+      <div class="log-head"><h2>最近的痕迹</h2><button class="clear" id="logClear">清空全部</button></div>
+      <div id="moodLog"></div>
+    </div>
+
+    <!-- 环境音 -->
+    <div class="card">
+      <h2>听点声音</h2>
+      <p class="sub" style="margin-bottom:12px;">点一下开始，再点一下停止。声音由手机实时生成，不需要联网。</p>
+      <div class="sound" data-s="rain"><div class="ic">🌧️</div><div><div class="t">细雨</div><div class="d">淅淅沥沥，盖住思绪</div></div><div class="st"></div></div>
+      <div class="sound" data-s="wave"><div class="ic">🌊</div><div><div class="t">海浪</div><div class="d">一起一落，像呼吸</div></div><div class="st"></div></div>
+      <div class="sound" data-s="white"><div class="ic">🌫️</div><div><div class="t">白噪音</div><div class="d">均匀的沙沙声，安稳</div></div><div class="st"></div></div>
+    </div>
+  </section>
+
+</div>
+
+<div id="nav">
+  <div class="tab on" data-go="home"><div class="em">🌙</div>今夜</div>
+  <div class="tab" data-go="breathe"><div class="em">🌬️</div>呼吸</div>
+  <div class="tab" data-go="tree"><div class="em">🌿</div>树洞</div>
+  <div class="tab" data-go="warm"><div class="em">💗</div>暖心</div>
+  <div class="tab" data-go="record"><div class="em">📖</div>记录</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(s,r){return (r||document).querySelector(s);};
+  var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+
+  // ---------- stars ----------
+  (function(){
+    var box = $('#stars'), n = 46;
+    for(var i=0;i<n;i++){
+      var s = document.createElement('div');
+      s.className='star';
+      s.style.left = (Math.random()*100)+'%';
+      s.style.top = (Math.random()*100)+'%';
+      s.style.animationDelay = (Math.random()*4)+'s';
+      var sc = 0.6+Math.random()*1.6;
+      s.style.transform='scale('+sc+')';
+      box.appendChild(s);
+    }
+  })();
+
+  // ---------- storage ----------
+  var KEY_SET='night_set', KEY_LOG='night_log', KEY_FAV='night_fav';
+  function load(k,def){ try{var v=localStorage.getItem(k);return v?JSON.parse(v):def;}catch(e){return def;} }
+  function save(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
+  var settings = load(KEY_SET,{her:'',him:'',vol:55});
+  var moodLog = load(KEY_LOG,[]);
+  var favs = load(KEY_FAV,[]);
+
+  // ---------- toast ----------
+  var toastTimer;
+  function toast(msg){
+    var t=$('#toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){t.classList.remove('show');},1800);
+  }
+
+  // ---------- nav ----------
+  var views={home:'v-home',breathe:'v-breathe',tree:'v-tree',warm:'v-warm',record:'v-record'};
+  function go(name){
+    if(mediaRec && mediaRec.state==='recording'){ try{mediaRec.stop();}catch(e){} }
+    $$('.view').forEach(function(v){v.classList.remove('active');});
+    $('#'+views[name]).classList.add('active');
+    $$('#nav .tab').forEach(function(t){t.classList.toggle('on', t.dataset.go===name);});
+    window.scrollTo(0,0);
+  }
+  $$('[data-go]').forEach(function(el){
+    el.addEventListener('click',function(){ go(el.dataset.go); });
+  });
+
+  // ---------- clock & greet ----------
+  function pad(n){return n<10?'0'+n:n;}
+  function tick(){
+    var d=new Date();
+    $('#clockText').textContent = pad(d.getHours())+':'+pad(d.getMinutes());
+    var h=d.getHours();
+    var g = h<5?'夜深了，世界都睡了': h<11?'早安': h<14?'午安': h<18?'下午好': h<23?'晚上好':'夜深了，记得你被爱着';
+    $('#greetText').textContent=g;
+  }
+  tick(); setInterval(tick,20000);
+
+  // ---------- comforting quotes ----------
+  var QUOTES=[
+    {t:'被理解',x:'此刻的难受是真实的，不需要立刻好起来。'},
+    {t:'被理解',x:'你不是矫情，你只是今天真的累了。'},
+    {t:'被理解',x:'没有人能一直坚强，想哭就哭一会儿，没关系的。'},
+    {t:'被爱着',x:'有人在这个世界的某个角落，真心希望你好。'},
+    {t:'被爱着',x:'你值得被温柔对待，包括被你自己。'},
+    {t:'被爱着',x:'就算现在觉得孤单，你也从不是真的一个人。'},
+    {t:'会过去',x:'今晚的黑暗不会一直停留，天总会亮的。'},
+    {t:'会过去',x:'情绪像天气，来了会走，不用急着赶它。'},
+    {t:'会过去',x:'明天又是新的一页，你可以慢慢翻。'},
+    {t:'允许脆弱',x:'承认“我不太好”，本身就是一种勇敢。'},
+    {t:'允许脆弱',x:'你可以什么都不做，只是好好呼吸。'},
+    {t:'允许脆弱',x:'累了就停下来，世界不会因此塌掉。'},
+    {t:'被理解',x:'冒出来的那些念头，不代表你不好，只代表你今天需要被抱一抱。'},
+    {t:'被爱着',x:'你已经在尽力了，这本身就值得被好好对待。'},
+    {t:'会过去',x:'再撑一下，今晚的你也已经很努力了。'},
+    {t:'允许脆弱',x:'不想说话的时候，就安静待着，我陪你。'}
+  ];
+  function pick(q){ return q[Math.floor(Math.random()*q.length)]; }
+  function renderQuote(tagEl,textEl,item){
+    var box=textEl.parentNode.parentNode;
+    box.style.opacity=0; box.style.filter='blur(6px)';
+    setTimeout(function(){
+      tagEl.textContent=item.t; textEl.textContent=item.x;
+      box.style.opacity=1; box.style.filter='blur(0)';
+    },260);
+  }
+  var homeQ=pick(QUOTES);
+  $('#homeQuoteTag').textContent=homeQ.t; $('#homeQuoteText').textContent=homeQ.x;
+  $('#homeQuoteBtn').addEventListener('click',function(){
+    var q; do{q=pick(QUOTES);}while(q.x===homeQ.x && QUOTES.length>1); homeQ=q;
+    renderQuote($('#homeQuoteTag'),$('#homeQuoteText'),q);
+  });
+
+  var warmQ=pick(QUOTES);
+  function renderWarm(){ renderQuote($('#warmTag'),$('#warmText'),warmQ); }
+  renderWarm();
+  $('#warmNext').addEventListener('click',function(){
+    var q; do{q=pick(QUOTES);}while(q.x===warmQ.x && QUOTES.length>1); warmQ=q; renderWarm();
+  });
+  $('#warmSave').addEventListener('click',function(){
+    if(favs.indexOf(warmQ.x)<0){ favs.push(warmQ.x); save(KEY_FAV,favs); toast('已收进心头好 💗'); }
+    else toast('这句已经在心头好啦');
+  });
+  $('#warmFavBtn').addEventListener('click',function(){
+    var wrap=$('#favListWrap'), list=$('#favList');
+    if(wrap.style.display==='none'){
+      if(!favs.length){ toast('还没有心头好，去收几句吧'); return; }
+      list.innerHTML=''; favs.forEach(function(x){ var d=document.createElement('div'); d.className='fav'; d.textContent='「'+x+'」'; list.appendChild(d); });
+      wrap.style.display='block'; $('#warmFavBtn').textContent='收起';
+    } else { wrap.style.display='none'; $('#warmFavBtn').textContent='心头好'; }
+  });
+
+  // ---------- breathing ----------
+  var PAT={
+    '478':{ph:[{n:'吸气',d:4,s:1.55},{n:'屏息',d:7,s:1.55},{n:'呼气',d:8,s:1}]},
+    'box':{ph:[{n:'吸气',d:4,s:1.55},{n:'屏息',d:4,s:1.55},{n:'呼气',d:4,s:1},{n:'屏息',d:4,s:1}]},
+    'calm':{ph:[{n:'吸气',d:4,s:1.55},{n:'呼气',d:4,s:1}]}
+  };
+  var curPat='478', breathOn=false, breathTimers=[];
+  $$('#breathPills .pill').forEach(function(p){
+    p.addEventListener('click',function(){
+      if(breathOn) return;
+      $$('#breathPills .pill').forEach(function(x){x.classList.remove('on');});
+      p.classList.add('on'); curPat=p.dataset.p;
+    });
+  });
+  function clearBreathTimers(){ breathTimers.forEach(clearTimeout); breathTimers=[]; }
+  function runBreath(){
+    var circle=$('#breathCircle'), ph=$('#breathPhase'), cnt=$('#breathCnt');
+    var seq=PAT[curPat].ph, idx=0;
+    function step(){
+      if(!breathOn) return;
+      var p=seq[idx];
+      circle.style.transitionDuration=p.d+'s';
+      circle.style.transform='scale('+p.s+')';
+      ph.textContent=p.n;
+      var left=p.d, iv=setInterval(function(){
+        left--; cnt.textContent=left>0?left:'';
+        if(left<=0) clearInterval(iv);
+      },1000);
+      cnt.textContent=p.d;
+      var t=setTimeout(function(){ idx=(idx+1)%seq.length; step(); }, p.d*1000);
+      breathTimers.push(t);
+    }
+    step();
+  }
+  $('#breathStart').addEventListener('click',function(){
+    breathOn=true; $('#breathStart').style.display='none'; $('#breathStop').style.display='block';
+    runBreath();
+  });
+  $('#breathStop').addEventListener('click',function(){
+    breathOn=false; clearBreathTimers();
+    $('#breathCircle').style.transitionDuration='1s'; $('#breathCircle').style.transform='scale(1)';
+    $('#breathPhase').textContent='结束了，做得很好'; $('#breathCnt').textContent='';
+    $('#breathStart').style.display='block'; $('#breathStop').style.display='none';
+  });
+
+  // ---------- tree hole ----------
+  $('#treeRelease').addEventListener('click',function(){
+    var ta=$('#treeInput');
+    if(!ta.value.trim() && !recUrl){ toast('先写点什么，或录一段语音吧'); return; }
+    ta.classList.add('release-anim');
+    var after=$('#treeAfter');
+    setTimeout(function(){
+      ta.value=''; ta.classList.remove('release-anim');
+      clearRec();
+      after.style.display='block';
+      setTimeout(function(){ after.style.display='none'; },5200);
+    },1600);
+  });
+
+  // ---------- tree hole recording ----------
+  var recSupported = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && (window.MediaRecorder||window.webkitMediaRecorder));
+  var mediaRec=null, recChunks=[], recBlob=null, recUrl=null, recStream=null, recInt=null, recSec=0;
+  var recBtn=$('#recBtn'), recDot=$('#recDot'), recLabel=$('#recLabel'), recTimer=$('#recTimer'), recPlayer=$('#recPlayer'), recTip=$('#recTip');
+  if(!recSupported){ recBtn.style.display='none'; if(recTip) recTip.textContent='当前浏览器不支持录音，可以用下面的文字方式。'; }
+  function fmt(s){ var m=Math.floor(s/60), ss=s%60; return (m<10?'0':'')+m+':'+(ss<10?'0':'')+ss; }
+  function tickRec(){ recSec++; recTimer.textContent=fmt(recSec); }
+  function ensureRec(){
+    navigator.mediaDevices.getUserMedia({audio:true}).then(function(stream){
+      recStream=stream;
+      var MR=window.MediaRecorder||window.webkitMediaRecorder;
+      mediaRec=new MR(stream); recChunks=[];
+      mediaRec.ondataavailable=function(e){ if(e.data && e.data.size) recChunks.push(e.data); };
+      mediaRec.onstop=function(){
+        clearInterval(recInt); recDot.classList.remove('live');
+        try{ recStream.getTracks().forEach(function(t){t.stop();}); }catch(e){}
+        recBlob=new Blob(recChunks,{type: mediaRec.mimeType||'audio/webm'});
+        if(recUrl) URL.revokeObjectURL(recUrl);
+        recUrl=URL.createObjectURL(recBlob);
+        recPlayer.innerHTML='<audio controls src="'+recUrl+'"></audio>';
+        recPlayer.style.display='block';
+        recLabel.textContent='🎙️ 重新录制';
+        recTimer.textContent=fmt(recSec);
+      };
+      mediaRec.start();
+      recSec=0; recTimer.textContent='00:00'; recDot.classList.add('live');
+      recLabel.textContent='⏹ 停止录音';
+      recInt=setInterval(tickRec,1000);
+    }).catch(function(err){
+      toast('无法录音：'+(err && err.name ? err.name : '权限被拒'));
+    });
+  }
+  function clearRec(){
+    if(mediaRec && mediaRec.state!=='inactive'){ try{mediaRec.stop();}catch(e){} }
+    clearInterval(recInt); recDot.classList.remove('live');
+    if(recUrl){ URL.revokeObjectURL(recUrl); recUrl=null; }
+    recBlob=null; recChunks=[]; recPlayer.innerHTML=''; recPlayer.style.display='none';
+    recLabel.textContent='🎙️ 录一段语音'; recTimer.textContent='00:00';
+  }
+  recBtn.addEventListener('click',function(){
+    if(mediaRec && mediaRec.state==='recording'){ mediaRec.stop(); return; }
+    if(!recSupported){ toast('当前环境不支持录音'); return; }
+    ensureRec();
+  });
+
+  // ---------- mood ----------
+  var curMood=0;
+  $$('#moodRow .mood').forEach(function(m){
+    m.addEventListener('click',function(){
+      $$('#moodRow .mood').forEach(function(x){x.classList.remove('on');});
+      m.classList.add('on'); curMood=parseInt(m.dataset.m,10);
+    });
+  });
+  function relTime(ts){
+    var d=Math.floor((Date.now()-ts)/1000);
+    if(d<60) return '刚刚';
+    if(d<3600) return Math.floor(d/60)+'分钟前';
+    if(d<86400) return Math.floor(d/3600)+'小时前';
+    return Math.floor(d/86400)+'天前';
+  }
+  var MOODCOL={1:'#ff8fa3',2:'#ffb38a',3:'#bcd9ff',4:'#b6f0dd',5:'#ffd2bd'};
+  var MOODTXT={1:'很难受',2:'低落',3:'平静',4:'还好',5:'温暖'};
+  function renderLog(){
+    var box=$('#moodLog');
+    if(!moodLog.length){ box.innerHTML='<div class="empty">还没有记录，今晚来第一条吧。</div>'; return; }
+    box.innerHTML='';
+    moodLog.slice(0,30).forEach(function(e,idx){
+      var row=document.createElement('div'); row.className='log-item';
+      var dot=document.createElement('div'); dot.className='dot'; dot.style.background=MOODCOL[e.m];
+      var m=document.createElement('div'); m.className='m'; m.textContent=MOODTXT[e.m]+(e.n?(' · '+e.n):'');
+      var t=document.createElement('div'); t.className='t'; t.textContent=relTime(e.ts);
+      var del=document.createElement('button'); del.className='del'; del.innerHTML='&#128465;&#65039;'; del.title='删除这条';
+      del.addEventListener('click',function(){
+        moodLog.splice(idx,1); save(KEY_LOG,moodLog); renderLog();
+      });
+      row.appendChild(dot); row.appendChild(m); row.appendChild(t); row.appendChild(del); box.appendChild(row);
+    });
+  }
+  $('#logClear').addEventListener('click',function(){
+    if(!moodLog.length){ toast('还没有记录'); return; }
+    if(confirm('确定清空所有记录吗？这一操作无法撤销。')){
+      moodLog=[]; save(KEY_LOG,moodLog); renderLog(); toast('已经清空啦');
+    }
+  });
+  renderLog();
+  $('#moodSave').addEventListener('click',function(){
+    if(!curMood){ toast('先选一个最贴近的心情'); return; }
+    var note=$('#moodNote').value.trim();
+    moodLog.unshift({ts:Date.now(),m:curMood,n:note});
+    if(moodLog.length>60) moodLog=moodLog.slice(0,60);
+    save(KEY_LOG,moodLog); renderLog();
+    $('#moodNote').value=''; $$('#moodRow .mood').forEach(function(x){x.classList.remove('on');}); curMood=0;
+    toast('记下了，明天回头看 🌙');
+  });
+
+  // ---------- nickname (fixed) ----------
+  function applyHer(){
+    var name=settings.her||'可爱奶茶';
+    var h=$('#homeTitle');
+    var d=new Date().getHours();
+    h.textContent = name+'，今夜也辛苦了';
+  }
+  applyHer();
+
+  // ---------- audio engine (generated, no files) ----------
+  var actx=null, master=null, curNode=null, curLFO=null, curSound=null;
+  function setVol(v){ if(master) master.gain.value=(v/100)*0.9; }
+  function ensureCtx(){
+    if(!actx){
+      var AC=window.AudioContext||window.webkitAudioContext;
+      actx=new AC(); master=actx.createGain(); master.gain.value=(settings.vol/100)*0.9; master.connect(actx.destination);
+    }
+    if(actx.state==='suspended') actx.resume();
+  }
+  function noiseBuffer(type){
+    var len=actx.sampleRate*2, buf=actx.createBuffer(1,len,actx.sampleRate), d=buf.getChannelData(0), i;
+    if(type==='white'){ for(i=0;i<len;i++) d[i]=Math.random()*2-1; }
+    else if(type==='pink'){
+      var b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for(i=0;i<len;i++){ var w=Math.random()*2-1;
+        b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759; b2=0.96900*b2+w*0.1538520;
+        b3=0.86650*b3+w*0.3104856; b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+        d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926; }
+    } else { // brown
+      var last=0; for(i=0;i<len;i++){ var wn=Math.random()*2-1; last=(last+0.02*wn)/1.02; d[i]=last*3.5; }
+    }
+    return buf;
+  }
+  function stopSound(){
+    if(curNode){ try{curNode.stop();}catch(e){} curNode.disconnect(); curNode=null; }
+    if(curLFO){ try{curLFO.stop();}catch(e){} curLFO.disconnect(); curLFO=null; }
+    curSound=null;
+    $$('.sound').forEach(function(s){ s.classList.remove('on'); s.querySelector('.st').textContent=''; });
+  }
+  function playSound(name){
+    ensureCtx(); stopSound();
+    var src=actx.createBufferSource(); src.buffer=noiseBuffer(name==='rain'?'white':(name==='wave'?'brown':'pink')); src.loop=true;
+    var g=actx.createGain(); g.gain.value=name==='wave'?0.35:0.5;
+    if(name==='rain'){ var bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1200; bp.Q.value=0.6;
+      var hp=actx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=420;
+      src.connect(hp); hp.connect(bp); bp.connect(g); }
+    else if(name==='wave'){
+      var lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=700;
+      src.connect(lp); lp.connect(g);
+      var lfo=actx.createOscillator(); lfo.frequency.value=0.09; var lg=actx.createGain(); lg.gain.value=0.28;
+      lfo.connect(lg); lg.connect(g.gain); lfo.start(); curLFO=lfo; }
+    else { var lp2=actx.createBiquadFilter(); lp2.type='lowpass'; lp2.frequency.value=1800; src.connect(lp2); lp2.connect(g); }
+    g.connect(master); src.start();
+    curNode=src; curSound=name;
+    $$('.sound').forEach(function(s){
+      var on=s.dataset.s===name; s.classList.toggle('on',on); s.querySelector('.st').textContent=on?'播放中':'';
+    });
+  }
+  $$('.sound').forEach(function(s){
+    s.addEventListener('click',function(){
+      var n=s.dataset.s;
+      if(curSound===n){ stopSound(); } else { playSound(n); }
+    });
+  });
+
+  // pause audio when leaving page (iPhone)
+  document.addEventListener('visibilitychange',function(){ if(document.hidden && curNode){ /* keep playing; user may lock screen */ } });
+
+})();
+</script>
+</body>
+</html>
