@@ -120,6 +120,17 @@
   .log-head .clear:active{opacity:.6;}
   .log-item .del{flex:none;font-size:15px;line-height:1;color:var(--faint);background:none;border:none;padding:4px 2px 4px 4px;margin-left:2px;cursor:pointer;opacity:.5;transition:opacity .15s;}
   .log-item .del:active{opacity:1;}
+
+  /* hug */
+  .hug-btn{background:linear-gradient(90deg,#ff9ec4,#ffc2a8);color:#3a2230;border:none;font-weight:700;font-size:16px;box-shadow:0 8px 24px rgba(255,160,200,.28);}
+  .hug-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .5s;background:radial-gradient(circle at 50% 45%, rgba(255,180,205,.40), rgba(18,14,36,.94) 70%);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);}
+  .hug-overlay.show{opacity:1;pointer-events:auto;}
+  .hug-inner{text-align:center;transform:scale(.82);transition:transform .55s cubic-bezier(.2,.9,.3,1.25);}
+  .hug-overlay.show .hug-inner{transform:scale(1);}
+  .hug-emoji{font-size:96px;animation:hugfloat 3.2s ease-in-out infinite;filter:drop-shadow(0 10px 30px rgba(255,160,200,.5));}
+  .hug-text{font-size:36px;font-weight:800;margin-top:16px;letter-spacing:2px;background:linear-gradient(90deg,#ffd1e8,#ffb3c8);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hug-sub{font-size:15px;color:#eccfe0;margin-top:12px;letter-spacing:1px;}
+  @keyframes hugfloat{0%,100%{transform:translateY(0);}50%{transform:translateY(-14px);}}
   /* sounds */
   .sound{display:flex;align-items:center;gap:14px;padding:14px;border-radius:18px;background:rgba(255,255,255,.05);
     border:1px solid var(--line);margin-bottom:12px;cursor:pointer;}
@@ -200,6 +211,8 @@
       <div class="ic">🌙</div>
       <div><div class="t">记一下今天</div><div class="d">留下此刻的情绪，明天回头看</div></div>
     </div>
+
+    <button class="btn hug-btn" id="hugBtn" style="margin-top:16px;">🤗 抱抱我</button>
   </section>
 
   <!-- 呼吸 -->
@@ -283,10 +296,16 @@
       <div class="sound" data-s="rain"><div class="ic">🌧️</div><div><div class="t">细雨</div><div class="d">淅淅沥沥，盖住思绪</div></div><div class="st"></div></div>
       <div class="sound" data-s="wave"><div class="ic">🌊</div><div><div class="t">海浪</div><div class="d">一起一落，像呼吸</div></div><div class="st"></div></div>
       <div class="sound" data-s="white"><div class="ic">🌫️</div><div><div class="t">白噪音</div><div class="d">均匀的沙沙声，安稳</div></div><div class="st"></div></div>
+      <div class="sound" data-s="fire"><div class="ic">🔥</div><div><div class="t">篝火</div><div class="d">噼啪作响，像在身边</div></div><div class="st"></div></div>
+      <div class="sound" data-s="purr"><div class="ic">🐱</div><div><div class="t">猫咪呼噜</div><div class="d">被软软地陪着</div></div><div class="st"></div></div>
+      <div class="sound" data-s="cricket"><div class="ic">🦗</div><div><div class="t">夜晚虫鸣</div><div class="d">夏夜院子里的安心</div></div><div class="st"></div></div>
+      <div class="sound" data-s="clock"><div class="ic">🕰️</div><div><div class="t">时钟滴答</div><div class="d">规律的声音，催眠</div></div><div class="st"></div></div>
     </div>
   </section>
 
 </div>
+
+<div id="hug" class="hug-overlay"><div class="hug-inner"><div class="hug-emoji">🤗</div><div class="hug-text">抱抱你</div><div class="hug-sub">今晚也有人陪着你</div></div></div>
 
 <div id="nav">
   <div class="tab on" data-go="home"><div class="em">🌙</div>今夜</div>
@@ -576,7 +595,7 @@
   applyHer();
 
   // ---------- audio engine (generated, no files) ----------
-  var actx=null, master=null, curNode=null, curLFO=null, curSound=null;
+  var actx=null, master=null, curNode=null, curLFO=null, curTimer=null, curSound=null;
   function setVol(v){ if(master) master.gain.value=(v/100)*0.9; }
   function ensureCtx(){
     if(!actx){
@@ -599,27 +618,69 @@
     }
     return buf;
   }
+  function blip(freq,dur,type,vol){
+    var o=actx.createOscillator(); o.type=type||'sine'; o.frequency.value=freq;
+    var g=actx.createGain(); var now=actx.currentTime;
+    g.gain.setValueAtTime(0.0001,now); g.gain.exponentialRampToValueAtTime(vol,now+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+    o.connect(g); g.connect(master); o.start(now); o.stop(now+dur+0.03);
+  }
+  function noiseBurst(dur,vol,hp){
+    var src=actx.createBufferSource(); src.buffer=noiseBuffer('white');
+    var f=actx.createBiquadFilter(); f.type='highpass'; f.frequency.value=hp||3000;
+    var g=actx.createGain(); var now=actx.currentTime;
+    g.gain.setValueAtTime(0.0001,now); g.gain.exponentialRampToValueAtTime(vol,now+0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001,now+dur);
+    src.connect(f); f.connect(g); g.connect(master); src.start(now); src.stop(now+dur+0.03);
+  }
   function stopSound(){
     if(curNode){ try{curNode.stop();}catch(e){} curNode.disconnect(); curNode=null; }
     if(curLFO){ try{curLFO.stop();}catch(e){} curLFO.disconnect(); curLFO=null; }
+    if(curTimer){ clearInterval(curTimer); curTimer=null; }
     curSound=null;
     $$('.sound').forEach(function(s){ s.classList.remove('on'); s.querySelector('.st').textContent=''; });
   }
   function playSound(name){
-    ensureCtx(); stopSound();
-    var src=actx.createBufferSource(); src.buffer=noiseBuffer(name==='rain'?'white':(name==='wave'?'brown':'pink')); src.loop=true;
-    var g=actx.createGain(); g.gain.value=name==='wave'?0.35:0.5;
-    if(name==='rain'){ var bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1200; bp.Q.value=0.6;
-      var hp=actx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=420;
-      src.connect(hp); hp.connect(bp); bp.connect(g); }
-    else if(name==='wave'){
-      var lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=700;
-      src.connect(lp); lp.connect(g);
-      var lfo=actx.createOscillator(); lfo.frequency.value=0.09; var lg=actx.createGain(); lg.gain.value=0.28;
-      lfo.connect(lg); lg.connect(g.gain); lfo.start(); curLFO=lfo; }
-    else { var lp2=actx.createBiquadFilter(); lp2.type='lowpass'; lp2.frequency.value=1800; src.connect(lp2); lp2.connect(g); }
-    g.connect(master); src.start();
-    curNode=src; curSound=name;
+    ensureCtx(); stopSound(); curSound=name;
+    if(name==='rain'||name==='wave'||name==='white'){
+      var src=actx.createBufferSource(); src.buffer=noiseBuffer(name==='rain'?'white':(name==='wave'?'brown':'pink')); src.loop=true;
+      var g=actx.createGain(); g.gain.value=name==='wave'?0.35:0.5;
+      if(name==='rain'){ var bp=actx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1200; bp.Q.value=0.6;
+        var hp=actx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=420;
+        src.connect(hp); hp.connect(bp); bp.connect(g); }
+      else if(name==='wave'){
+        var lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=700;
+        src.connect(lp); lp.connect(g);
+        var lfo=actx.createOscillator(); lfo.frequency.value=0.09; var lg=actx.createGain(); lg.gain.value=0.28;
+        lfo.connect(lg); lg.connect(g.gain); lfo.start(); curLFO=lfo; }
+      else { var lp2=actx.createBiquadFilter(); lp2.type='lowpass'; lp2.frequency.value=1800; src.connect(lp2); lp2.connect(g); }
+      g.connect(master); src.start(); curNode=src;
+    }
+    else if(name==='fire'){
+      var src=actx.createBufferSource(); src.buffer=noiseBuffer('brown'); src.loop=true;
+      var lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=430;
+      var g=actx.createGain(); g.gain.value=0.5;
+      src.connect(lp); lp.connect(g); g.connect(master); src.start(); curNode=src;
+      curTimer=setInterval(function(){ if(Math.random()<0.7) noiseBurst(0.05,0.45,1700+Math.random()*2600); }, 160+Math.random()*200);
+    }
+    else if(name==='purr'){
+      var o=actx.createOscillator(); o.type='sawtooth'; o.frequency.value=85;
+      var lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=200;
+      var g=actx.createGain(); g.gain.value=0.2;
+      var trem=actx.createOscillator(); trem.frequency.value=26; var tg=actx.createGain(); tg.gain.value=0.16;
+      trem.connect(tg); tg.connect(g.gain);
+      o.connect(lp); lp.connect(g); g.connect(master); o.start(); trem.start();
+      curNode=o; curLFO=trem;
+    }
+    else if(name==='cricket'){
+      curTimer=setInterval(function(){
+        blip(4200+Math.random()*450,0.06,'triangle',0.12);
+        setTimeout(function(){ blip(4200+Math.random()*450,0.06,'triangle',0.12); }, 95);
+      }, 720);
+    }
+    else if(name==='clock'){
+      curTimer=setInterval(function(){ noiseBurst(0.03,0.5,2400); }, 1000);
+    }
     $$('.sound').forEach(function(s){
       var on=s.dataset.s===name; s.classList.toggle('on',on); s.querySelector('.st').textContent=on?'播放中':'';
     });
@@ -633,6 +694,15 @@
 
   // pause audio when leaving page (iPhone)
   document.addEventListener('visibilitychange',function(){ if(document.hidden && curNode){ /* keep playing; user may lock screen */ } });
+
+  // ---------- hug ----------
+  var HUG_SUBS=['今晚也有人陪着你','你不是一个人呀','都已经没事哒','慢慢来，不着急','我就在呢','我一直在的'];
+  $('#hugBtn').addEventListener('click',function(){
+    var h=$('#hug');
+    h.querySelector('.hug-sub').textContent=HUG_SUBS[Math.floor(Math.random()*HUG_SUBS.length)];
+    h.classList.add('show');
+  });
+  $('#hug').addEventListener('click',function(){ this.classList.remove('show'); });
 
 })();
 </script>
