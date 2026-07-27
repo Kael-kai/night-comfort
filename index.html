@@ -14,6 +14,7 @@
     --bg0:#15162e; --bg1:#241a44; --bg2:#0e1838;
     --ink:#ECE9F5; --muted:#9a96b8; --faint:#6b6788;
     --lav:#c9b6ff; --peach:#ffd2bd; --mint:#b6f0dd; --sky:#bcd9ff;
+    --ac1:#ffd2bd; --ac2:#ffb6d9; --ac3:#c9b6ff; --ac4:#b6f0dd;
     --card:rgba(255,255,255,.06); --line:rgba(255,255,255,.12);
     --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
   }
@@ -121,6 +122,35 @@
   .log-item .del{flex:none;font-size:15px;line-height:1;color:var(--faint);background:none;border:none;padding:4px 2px 4px 4px;margin-left:2px;cursor:pointer;opacity:.5;transition:opacity .15s;}
   .log-item .del:active{opacity:1;}
 
+  /* 每日一句 */
+  .daily{display:flex;gap:10px;align-items:flex-start;margin:0 0 16px;}
+  .daily .dtag{font-size:11px;color:var(--lav);border:1px solid rgba(201,182,255,.4);border-radius:12px;padding:2px 9px;white-space:nowrap;flex:none;margin-top:3px;}
+  .daily .dtext{font-size:15.5px;line-height:1.75;color:var(--ink);}
+
+  /* 主题色彩蛋 */
+  .accent-picker{display:none;gap:12px;justify-content:center;margin-top:14px;}
+  .accent-picker.show{display:flex;}
+  .accent-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid rgba(255,255,255,.3);transition:transform .15s;}
+  .accent-dot:active{transform:scale(1.18);}
+  .heart{position:fixed;font-size:22px;pointer-events:none;z-index:30;animation:heartfly 1.6s ease-out forwards;}
+  @keyframes heartfly{0%{opacity:0;transform:translateY(0) scale(.6);}20%{opacity:1;}100%{opacity:0;transform:translateY(-170px) scale(1.15);}}
+
+  /* 捏泡泡 */
+  .bubble-wrap{position:relative;height:330px;overflow:hidden;border-radius:18px;background:radial-gradient(circle at 50% 130%, rgba(201,182,255,.16), transparent 62%);}
+  .bubble{position:absolute;bottom:-70px;border-radius:50%;background:radial-gradient(circle at 35% 30%, rgba(255,255,255,.92), var(--ac3) 58%, rgba(201,182,255,.35));box-shadow:0 0 18px rgba(255,255,255,.22);cursor:pointer;animation:rise linear forwards;}
+  @keyframes rise{to{transform:translateY(-430px);opacity:.15;}}
+  .bubble-count{font-size:13px;color:var(--muted);text-align:center;margin-top:10px;}
+
+  /* 冥想引导 */
+  .med-overlay{position:fixed;inset:0;z-index:25;background:linear-gradient(160deg,#1a1530,#2a1d4a 60%,#0e1838);display:none;flex-direction:column;align-items:center;justify-content:center;gap:26px;text-align:center;padding:24px;}
+  .med-overlay.show{display:flex;}
+  .med-dot{width:118px;height:118px;border-radius:50%;background:radial-gradient(circle at 50% 40%, var(--ac3), var(--ac2));box-shadow:0 0 46px rgba(201,182,255,.5);animation:medpulse 8s ease-in-out infinite;flex:none;}
+  @keyframes medpulse{0%,100%{transform:scale(.82);opacity:.82;}50%{transform:scale(1.12);opacity:1;}}
+  .med-text{font-size:17px;line-height:1.85;max-width:290px;min-height:56px;color:var(--ink);}
+  .med-prog{display:flex;gap:6px;}
+  .med-prog i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.22);transition:background .3s;}
+  .med-prog i.on{background:var(--lav);}
+
   /* hug */
   .hug-btn{background:linear-gradient(90deg,#ff9ec4,#ffc2a8);color:#3a2230;border:none;font-weight:700;font-size:16px;box-shadow:0 8px 24px rgba(255,160,200,.28);}
   .hug-overlay{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .5s;background:radial-gradient(circle at 50% 45%, rgba(255,180,205,.40), rgba(18,14,36,.94) 70%);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);}
@@ -163,7 +193,7 @@
   .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
   .clock{font-size:13px;color:var(--muted);}
   .dedicate{text-align:center;font-size:19px;letter-spacing:1.5px;font-weight:800;margin:2px 0 16px;line-height:1.6;
-    background:linear-gradient(90deg,#ffd2bd 0%,#ffb6d9 35%,#c9b6ff 70%,#b6f0dd 100%);
+    background:linear-gradient(90deg,var(--ac1) 0%,var(--ac2) 35%,var(--ac3) 70%,var(--ac4) 100%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
     filter:drop-shadow(0 0 12px rgba(201,182,255,.4));animation:dedfade .8s ease;}
   @keyframes dedfade{from{opacity:0;transform:translateY(-6px);}to{opacity:1;transform:none;}}
@@ -183,7 +213,7 @@
 
   <!-- 今夜 -->
   <section class="view active" id="v-home">
-    <div class="dedicate">全世界最可爱、最漂亮的奶茶专属</div>
+    <div class="dedicate" id="dedicate">全世界最可爱、最漂亮的奶茶专属</div>
     <div class="topbar"><div class="greet" id="greetText">夜深了</div><div class="clock" id="clockText"></div></div>
     <h1 id="homeTitle">今夜，也辛苦了</h1>
     <p class="sub" id="homeSub">如果现在心里有点空，点下面的卡片，挑一个想做的事。</p>
@@ -213,6 +243,20 @@
     </div>
 
     <button class="btn hug-btn" id="hugBtn" style="margin-top:16px;">🤗 抱抱我</button>
+
+    <div class="card" style="margin-top:18px;">
+      <div class="daily">
+        <span class="dtag" id="dailyDate">今日一句</span>
+        <div class="dtext" id="dailyText"></div>
+      </div>
+    </div>
+
+    <div class="accent-picker" id="accentPicker">
+      <div class="accent-dot" data-c="lav" style="background:linear-gradient(135deg,#ffd2bd,#c9b6ff);"></div>
+      <div class="accent-dot" data-c="rose" style="background:linear-gradient(135deg,#ffc4d6,#ff9ec4);"></div>
+      <div class="accent-dot" data-c="mint" style="background:linear-gradient(135deg,#b6f0dd,#9ff0d0);"></div>
+      <div class="accent-dot" data-c="sky" style="background:linear-gradient(135deg,#bcd9ff,#a9c8ff);"></div>
+    </div>
   </section>
 
   <!-- 呼吸 -->
@@ -248,6 +292,27 @@
       <textarea id="treeInput" placeholder="今天有点难受……（写下来，或录下来，都会轻轻飘走）"></textarea>
       <button class="btn" id="treeRelease" style="margin-top:14px;">轻轻放下</button>
       <div class="after-note" id="treeAfter">已经放下了一些。辛苦你了，今晚好好休息。🌙</div>
+    </div>
+  </section>
+
+  <!-- 静心 -->
+  <section class="view" id="v-calm">
+    <div class="topbar"><div class="greet">静心</div></div>
+    <h1>慢慢把自己放进夜里</h1>
+    <p class="sub">两个小工具，帮脑子从胡思乱想里一点点抽离出来。</p>
+
+    <div class="card">
+      <h2>🫧 捏泡泡</h2>
+      <p class="sub">泡泡往上飘，轻轻点破它。一下，一下，心也跟着静下来。</p>
+      <div class="bubble-wrap" id="bubbleWrap"></div>
+      <div class="bubble-count" id="bubbleCount">已捏破 0 个</div>
+      <button class="btn" id="bubbleBtn" style="margin-top:12px;">开始捏</button>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <h2>🧘 轻柔冥想引导</h2>
+      <p class="sub">跟着文字一句一句做，约两分钟，把今天轻轻放下。</p>
+      <button class="btn" id="medStart">开始引导</button>
     </div>
   </section>
 
@@ -307,12 +372,20 @@
 
 <div id="hug" class="hug-overlay"><div class="hug-inner"><div class="hug-emoji">🤗</div><div class="hug-text">抱抱你</div><div class="hug-sub">今晚也有人陪着你</div></div></div>
 
+<div id="med" class="med-overlay">
+  <div class="med-dot"></div>
+  <div class="med-text" id="medText"></div>
+  <div class="med-prog" id="medProg"></div>
+  <button class="btn ghost" id="medEnd">结束</button>
+</div>
+
 <div id="nav">
   <div class="tab on" data-go="home"><div class="em">🌙</div>今夜</div>
   <div class="tab" data-go="breathe"><div class="em">🌬️</div>呼吸</div>
   <div class="tab" data-go="tree"><div class="em">🌿</div>树洞</div>
   <div class="tab" data-go="warm"><div class="em">💗</div>暖心</div>
   <div class="tab" data-go="record"><div class="em">📖</div>记录</div>
+  <div class="tab" data-go="calm"><div class="em">🌟</div>静心</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -354,9 +427,11 @@
   }
 
   // ---------- nav ----------
-  var views={home:'v-home',breathe:'v-breathe',tree:'v-tree',warm:'v-warm',record:'v-record'};
+  var views={home:'v-home',breathe:'v-breathe',tree:'v-tree',warm:'v-warm',record:'v-record',calm:'v-calm'};
   function go(name){
     if(mediaRec && mediaRec.state==='recording'){ try{mediaRec.stop();}catch(e){} }
+    if(name!=='calm'){ stopBubbles(); }
+    if($('#med').classList.contains('show')){ clearTimeout(medStepT); $('#med').classList.remove('show'); }
     $$('.view').forEach(function(v){v.classList.remove('active');});
     $('#'+views[name]).classList.add('active');
     $$('#nav .tab').forEach(function(t){t.classList.toggle('on', t.dataset.go===name);});
@@ -694,6 +769,111 @@
 
   // pause audio when leaving page (iPhone)
   document.addEventListener('visibilitychange',function(){ if(document.hidden && curNode){ /* keep playing; user may lock screen */ } });
+
+  // ---------- 每日一句 ----------
+  var DAILY=['今天也认真活过啦，这就够好了。','你不需要一直坚强，脆弱也可以很美。','再难的夜，也会天亮。',
+    '你值得被温柔地对待，包括被自己。','已经很努力了，剩下的交给今晚的睡眠。','有人正在想你，虽然你不知道。',
+    '把心事放一放，它们不会跑掉。','你比自己以为的更勇敢。','今天辛苦了，明天的事明天再说。','允许自己什么都不做，就现在。'];
+  function setupDaily(){
+    var d=new Date(); var key=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    var h=0; for(var i=0;i<key.length;i++) h=(h*31+key.charCodeAt(i))>>>0;
+    $('#dailyText').textContent=DAILY[h%DAILY.length];
+    $('#dailyDate').textContent=(d.getMonth()+1)+'月'+d.getDate()+'日 · 今日一句';
+  }
+
+  // ---------- 主题色彩蛋 ----------
+  function applyAccent(c){
+    var map={
+      lav:['#ffd2bd','#ffb6d9','#c9b6ff','#b6f0dd'],
+      rose:['#ffc4d6','#ff9ec4','#ffd1e8','#ffb8c8'],
+      mint:['#b6f0dd','#9ff0d0','#c9f5e0','#b6f0ee'],
+      sky:['#bcd9ff','#a9c8ff','#cfe3ff','#bcd9ff']
+    };
+    var a=map[c]||map.lav, r=document.documentElement.style;
+    r.setProperty('--ac1',a[0]); r.setProperty('--ac2',a[1]); r.setProperty('--ac3',a[2]); r.setProperty('--ac4',a[3]);
+  }
+  if(settings.accent){ applyAccent(settings.accent); }
+  var tapN=0, tapT;
+  $('#dedicate').addEventListener('click',function(){
+    tapN++; clearTimeout(tapT); tapT=setTimeout(function(){tapN=0;},900);
+    if(tapN>=7){ tapN=0; doHearts(); $('#accentPicker').classList.add('show'); toast('🎉 偷偷说：你被很爱很爱着'); }
+  });
+  function doHearts(){
+    for(var i=0;i<16;i++){ (function(i){
+      var h=document.createElement('div'); h.className='heart';
+      h.textContent=Math.random()<0.5?'💕':'💗';
+      h.style.left=(8+Math.random()*84)+'%'; h.style.top=(28+Math.random()*42)+'%';
+      h.style.animationDelay=(i*0.05)+'s';
+      document.body.appendChild(h);
+      setTimeout(function(){ if(h.parentNode) h.parentNode.removeChild(h); },1800);
+    })(i); }
+  }
+  $('#accentPicker').addEventListener('click',function(e){
+    var d=e.target.closest('.accent-dot'); if(!d) return;
+    applyAccent(d.dataset.c); settings.accent=d.dataset.c; save(KEY_SET,settings); toast('主题已换好 💜');
+  });
+
+  // ---------- 助眠小互动：捏泡泡 ----------
+  var bubbleOn=false, bubbleSI=null, bubbleN=0;
+  function spawnBubble(){
+    if(!bubbleOn) return;
+    var wrap=$('#bubbleWrap'), b=document.createElement('div'); b.className='bubble';
+    var size=26+Math.random()*42;
+    b.style.width=b.style.height=size+'px';
+    b.style.left=(Math.random()*86)+'%';
+    b.style.animationDuration=(3.4+Math.random()*3)+'s';
+    b.addEventListener('click',function(){
+      ensureCtx(); blip(560+Math.random()*420,0.18,'sine',0.16);
+      if(b.parentNode) b.parentNode.removeChild(b);
+      bubbleN++; $('#bubbleCount').textContent='已捏破 '+bubbleN+' 个';
+    });
+    wrap.appendChild(b);
+    setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); }, 7200);
+  }
+  function stopBubbles(){
+    bubbleOn=false; if(bubbleSI){ clearInterval(bubbleSI); bubbleSI=null; }
+    var btn=$('#bubbleBtn'); if(btn){ btn.textContent='开始捏'; }
+    var wrap=$('#bubbleWrap'); if(wrap){ while(wrap.firstChild) wrap.removeChild(wrap.firstChild); }
+  }
+  $('#bubbleBtn').addEventListener('click',function(){
+    bubbleOn=!bubbleOn;
+    if(bubbleOn){ bubbleN=0; $('#bubbleCount').textContent='已捏破 0 个'; this.textContent='停下来'; bubbleSI=setInterval(spawnBubble,430); }
+    else { this.textContent='开始捏'; clearInterval(bubbleSI); }
+  });
+
+  // ---------- 轻柔冥想引导 ----------
+  var MED=['找一个舒服的姿势，躺着或靠着都好。把手机放到一边，闭上眼睛。',
+    '把注意力轻轻放在呼吸上。不用改变它，只是感受。',
+    '吸气……让空气慢慢填满胸口。',
+    '呼气……感觉肩膀、下巴一点点松下来。',
+    '如果脑子里冒出什么念头，不用赶它，看它像云一样飘走。',
+    '再一次，深深吸一口气。',
+    '慢慢呼出来。你已经很安全，这里只有你和自己。',
+    '就这样停一会儿。今晚的事，都先放下了。没事哒。'];
+  var medStepT=null, medIdx=0;
+  function buildProg(){
+    var p=$('#medProg'); p.innerHTML='';
+    for(var i=0;i<MED.length;i++){ var d=document.createElement('i'); p.appendChild(d); }
+  }
+  function medNext(){
+    medIdx++;
+    if(medIdx>=MED.length){ endMed(true); return; }
+    $('#medText').textContent=MED[medIdx];
+    $$('#medProg i').forEach(function(dot,i){ dot.classList.toggle('on', i<=medIdx); });
+    ensureCtx(); blip(396,0.55,'sine',0.12);
+    clearTimeout(medStepT); medStepT=setTimeout(medNext, 16000);
+  }
+  function startMed(){
+    ensureCtx(); $('#med').classList.add('show'); medIdx=-1; buildProg(); medNext();
+  }
+  function endMed(done){
+    clearTimeout(medStepT); $('#med').classList.remove('show');
+    if(done) toast('今晚辛苦了，去睡吧 🌙');
+  }
+  $('#medStart').addEventListener('click', startMed);
+  $('#medEnd').addEventListener('click', function(){ endMed(false); });
+
+  setupDaily();
 
   // ---------- hug ----------
   var HUG_SUBS=['今晚也有人陪着你','你不是一个人呀','都已经没事哒','慢慢来，不着急','我就在呢','我一直在的'];
