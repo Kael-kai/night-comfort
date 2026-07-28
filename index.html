@@ -419,19 +419,6 @@
   var moodLog = load(KEY_LOG,[]);
   var favs = load(KEY_FAV,[]);
 
-  // ---------- 使用情况上报（51.la，国内可直接访问，无需 VPN）----------
-  // 51.la 异步安装：从后台复制代码，替换 id/ck 即可。每次打开自动记「访问」；点功能记「事件」。
-  !function(p){"use strict";!function(t){var s=window,e=document,i=p,c="".concat("https:"===e.location.protocol?"https://":"http://","sdk.51.la/js-sdk-pro.min.js"),n=e.createElement("script"),r=e.getElementsByTagName("script")[0];n.type="text/javascript",n.setAttribute("charset","UTF-8"),n.async=!0,n.src=c,n.id="LA_COLLECT";var o=function(){s.LA.ids.push(i)};s.LA?s.LA.ids&&o():(s.LA=p,s.LA.ids=[],o()),r.parentNode.insertBefore(n,r)}()}({id:"3Qhtt58IDYYWDief",ck:"3Qhtt58IDYYWDief"});
-  var usageDev=(function(){ var d=load('night_dev',''); if(!d){ d=Math.random().toString(36).slice(2,10); save('night_dev',d); } return d; })();
-  function usage(action, note){
-    try{
-      var label=usageDev+(note?(' '+note):'');
-      if(window.LA && window.LA.track){ window.LA.track(action||'open', {category:'night_comfort', label:label}); }
-      else if(window.LA && window.LA.event){ window.LA.event('night_comfort', action||'open', label); }
-    }catch(e){}
-  }
-  if(document.visibilityState!=='hidden') usage('open');
-
   // ---------- toast ----------
   var toastTimer;
   function toast(msg){
@@ -554,7 +541,6 @@
     step();
   }
   $('#breathStart').addEventListener('click',function(){
-    usage('breath');
     breathOn=true; $('#breathStart').style.display='none'; $('#breathStop').style.display='block';
     runBreath();
   });
@@ -569,7 +555,6 @@
   $('#treeRelease').addEventListener('click',function(){
     var ta=$('#treeInput');
     if(!ta.value.trim() && !recUrl){ toast('先写点什么，或录一段语音吧'); return; }
-    usage('tree');
     ta.classList.add('release-anim');
     var after=$('#treeAfter');
     setTimeout(function(){
@@ -885,7 +870,7 @@
     clearTimeout(medStepT); $('#med').classList.remove('show');
     if(done) toast('今晚辛苦了，去睡吧 🌙');
   }
-  $('#medStart').addEventListener('click', function(){ usage('med'); startMed(); });
+  $('#medStart').addEventListener('click', function(){ startMed(); });
   $('#medEnd').addEventListener('click', function(){ endMed(false); });
 
   setupDaily();
@@ -893,7 +878,6 @@
   // ---------- hug ----------
   var HUG_SUBS=['今晚也有人陪着你','你不是一个人呀','都已经没事哒','慢慢来，不着急','我就在呢','我一直在的'];
   $('#hugBtn').addEventListener('click',function(){
-    usage('hug');
     var h=$('#hug');
     h.querySelector('.hug-sub').textContent=HUG_SUBS[Math.floor(Math.random()*HUG_SUBS.length)];
     h.classList.add('show');
