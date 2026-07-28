@@ -419,22 +419,22 @@
   var moodLog = load(KEY_LOG,[]);
   var favs = load(KEY_FAV,[]);
 
-  // ---------- 使用情况上报（百度统计，国内可直接访问，无需 VPN）----------
-  // 把下面 BAIDU_ID 换成你在 tongji.baidu.com 拿到的「站点ID」（一串数字）。
+  // ---------- 使用情况上报（CNZZ/友盟+，国内可直接访问，无需 VPN）----------
+  // 把下面 CNZZ_ID 换成你在 cnzz.com（友盟+）拿到的「站点ID」（一串数字）。
   // 每次打开网页会自动记一次「访问」；点功能会记「事件」（动作名）。
-  var BAIDU_ID='ae228fa603fe0be5bb9d74f3afc9b15e';
-  if(BAIDU_ID && BAIDU_ID!=='PASTE_BAIDU_ID_HERE'){
-    var _hmt=_hmt||[];
+  var CNZZ_ID='6a68d768934d206f584e8eff';
+  var _czc=_czc||[];
+  if(CNZZ_ID && CNZZ_ID!=='PASTE_CNZZ_ID_HERE'){
     (function(){
       var hm=document.createElement('script');
-      hm.src='https://hm.baidu.com/hm.js?'+BAIDU_ID;
+      hm.src='https://v1.cnzz.com/z_stat.php?id='+CNZZ_ID+'&web_id='+CNZZ_ID;
       var s=document.getElementsByTagName('script')[0];
       s.parentNode.insertBefore(hm,s);
     })();
   }
   var usageDev=(function(){ var d=load('night_dev',''); if(!d){ d=Math.random().toString(36).slice(2,10); save('night_dev',d); } return d; })();
   function usage(action, note){
-    try{ if(window._hmt){ _hmt.push(['_trackEvent','night_comfort', action||'open', usageDev+(note?(' '+note):'')]); } }catch(e){}
+    try{ if(window._czc){ _czc.push(['_trackEvent','night_comfort', action||'open', usageDev+(note?(' '+note):'')]); } }catch(e){}
   }
   if(document.visibilityState!=='hidden') usage('open');
 
