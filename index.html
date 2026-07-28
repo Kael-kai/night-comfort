@@ -419,26 +419,22 @@
   var moodLog = load(KEY_LOG,[]);
   var favs = load(KEY_FAV,[]);
 
-  // ---------- 使用情况上报（只记「打开/操作」的时间，不含任何内容）----------
-  // 用 Google 表单收集，无需授权。数据写进你自己的表格。
-  // 表单 formResponse 地址 + 各列 entry 编号（顺序：时间/设备/动作/备注/第5列）
-  var FORM_ID='1FAIpQLScTf820nVeCzZ3sV83QS40ZgEYXlNbfvmSZN5UEzKoeYvpI_A';
-  var USAGE_ENDPOINT='https://docs.google.com/forms/d/e/'+FORM_ID+'/formResponse';
-  var E_TIME='139300418', E_DEV='942221457', E_ACT='877128866', E_NOTE='1530780157', E_EXTRA='1909776846';
+  // ---------- 使用情况上报（百度统计，国内可直接访问，无需 VPN）----------
+  // 把下面 BAIDU_ID 换成你在 tongji.baidu.com 拿到的「站点ID」（一串数字）。
+  // 每次打开网页会自动记一次「访问」；点功能会记「事件」（动作名）。
+  var BAIDU_ID='ae228fa603fe0be5bb9d74f3afc9b15e';
+  if(BAIDU_ID && BAIDU_ID!=='PASTE_BAIDU_ID_HERE'){
+    var _hmt=_hmt||[];
+    (function(){
+      var hm=document.createElement('script');
+      hm.src='https://hm.baidu.com/hm.js?'+BAIDU_ID;
+      var s=document.getElementsByTagName('script')[0];
+      s.parentNode.insertBefore(hm,s);
+    })();
+  }
   var usageDev=(function(){ var d=load('night_dev',''); if(!d){ d=Math.random().toString(36).slice(2,10); save('night_dev',d); } return d; })();
   function usage(action, note){
-    if(!USAGE_ENDPOINT) return;
-    try{
-      var ts=new Date();
-      var stamp=ts.getFullYear()+'-'+pad(ts.getMonth()+1)+'-'+pad(ts.getDate())+' '+pad(ts.getHours())+':'+pad(ts.getMinutes())+':'+pad(ts.getSeconds());
-      var q='entry.'+E_TIME+'='+encodeURIComponent(stamp)
-          +'&entry.'+E_DEV+'='+encodeURIComponent(usageDev)
-          +'&entry.'+E_ACT+'='+encodeURIComponent(action||'')
-          +'&entry.'+E_NOTE+'='+encodeURIComponent(note||'')
-          +'&entry.'+E_EXTRA+'='+encodeURIComponent('-');
-      var img=new Image(); img.referrerPolicy='no-referrer'; img.onerror=function(){}; img.onload=function(){};
-      img.src=USAGE_ENDPOINT+'?'+q;
-    }catch(e){}
+    try{ if(window._hmt){ _hmt.push(['_trackEvent','night_comfort', action||'open', usageDev+(note?(' '+note):'')]); } }catch(e){}
   }
   if(document.visibilityState!=='hidden') usage('open');
 
