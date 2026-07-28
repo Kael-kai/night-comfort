@@ -419,22 +419,16 @@
   var moodLog = load(KEY_LOG,[]);
   var favs = load(KEY_FAV,[]);
 
-  // ---------- 使用情况上报（CNZZ/友盟+，国内可直接访问，无需 VPN）----------
-  // 把下面 CNZZ_ID 换成你在 cnzz.com（友盟+）拿到的「站点ID」（一串数字）。
-  // 每次打开网页会自动记一次「访问」；点功能会记「事件」（动作名）。
-  var CNZZ_ID='6a68d768934d206f584e8eff';
-  var _czc=_czc||[];
-  if(CNZZ_ID && CNZZ_ID!=='PASTE_CNZZ_ID_HERE'){
-    (function(){
-      var hm=document.createElement('script');
-      hm.src='https://v1.cnzz.com/z_stat.php?id='+CNZZ_ID+'&web_id='+CNZZ_ID;
-      var s=document.getElementsByTagName('script')[0];
-      s.parentNode.insertBefore(hm,s);
-    })();
-  }
+  // ---------- 使用情况上报（51.la，国内可直接访问，无需 VPN）----------
+  // 51.la 异步安装：从后台复制代码，替换 id/ck 即可。每次打开自动记「访问」；点功能记「事件」。
+  !function(p){"use strict";!function(t){var s=window,e=document,i=p,c="".concat("https:"===e.location.protocol?"https://":"http://","sdk.51.la/js-sdk-pro.min.js"),n=e.createElement("script"),r=e.getElementsByTagName("script")[0];n.type="text/javascript",n.setAttribute("charset","UTF-8"),n.async=!0,n.src=c,n.id="LA_COLLECT";var o=function(){s.LA.ids.push(i)};s.LA?s.LA.ids&&o():(s.LA=p,s.LA.ids=[],o()),r.parentNode.insertBefore(n,r)}()}({id:"3Qhtt58IDYYWDief",ck:"3Qhtt58IDYYWDief"});
   var usageDev=(function(){ var d=load('night_dev',''); if(!d){ d=Math.random().toString(36).slice(2,10); save('night_dev',d); } return d; })();
   function usage(action, note){
-    try{ if(window._czc){ _czc.push(['_trackEvent','night_comfort', action||'open', usageDev+(note?(' '+note):'')]); } }catch(e){}
+    try{
+      var label=usageDev+(note?(' '+note):'');
+      if(window.LA && window.LA.track){ window.LA.track(action||'open', {category:'night_comfort', label:label}); }
+      else if(window.LA && window.LA.event){ window.LA.event('night_comfort', action||'open', label); }
+    }catch(e){}
   }
   if(document.visibilityState!=='hidden') usage('open');
 
