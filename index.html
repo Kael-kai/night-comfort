@@ -419,6 +419,18 @@
   var moodLog = load(KEY_LOG,[]);
   var favs = load(KEY_FAV,[]);
 
+  // ---------- 使用情况上报（只记「打开/操作」的时间，不含任何内容）----------
+  var USAGE_ENDPOINT=''; // ← 把 Google Apps Script 部署的 Web App 地址填到这里
+  var usageDev=(function(){ var d=load('night_dev',''); if(!d){ d=Math.random().toString(36).slice(2,10); save('night_dev',d); } return d; })();
+  function usage(action){
+    if(!USAGE_ENDPOINT) return;
+    try{
+      var url=USAGE_ENDPOINT+'?t='+Date.now()+'&d='+encodeURIComponent(usageDev)+'&a='+encodeURIComponent(action);
+      new Image().src=url;
+    }catch(e){}
+  }
+  usage('open');
+
   // ---------- toast ----------
   var toastTimer;
   function toast(msg){
@@ -541,6 +553,7 @@
     step();
   }
   $('#breathStart').addEventListener('click',function(){
+    usage('breath');
     breathOn=true; $('#breathStart').style.display='none'; $('#breathStop').style.display='block';
     runBreath();
   });
@@ -555,6 +568,7 @@
   $('#treeRelease').addEventListener('click',function(){
     var ta=$('#treeInput');
     if(!ta.value.trim() && !recUrl){ toast('先写点什么，或录一段语音吧'); return; }
+    usage('tree');
     ta.classList.add('release-anim');
     var after=$('#treeAfter');
     setTimeout(function(){
@@ -870,7 +884,7 @@
     clearTimeout(medStepT); $('#med').classList.remove('show');
     if(done) toast('今晚辛苦了，去睡吧 🌙');
   }
-  $('#medStart').addEventListener('click', startMed);
+  $('#medStart').addEventListener('click', function(){ usage('med'); startMed(); });
   $('#medEnd').addEventListener('click', function(){ endMed(false); });
 
   setupDaily();
@@ -878,6 +892,7 @@
   // ---------- hug ----------
   var HUG_SUBS=['今晚也有人陪着你','你不是一个人呀','都已经没事哒','慢慢来，不着急','我就在呢','我一直在的'];
   $('#hugBtn').addEventListener('click',function(){
+    usage('hug');
     var h=$('#hug');
     h.querySelector('.hug-sub').textContent=HUG_SUBS[Math.floor(Math.random()*HUG_SUBS.length)];
     h.classList.add('show');
